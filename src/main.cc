@@ -86,6 +86,10 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
 
+    QCoreApplication::setOrganizationName("Onedata");
+    QCoreApplication::setOrganizationDomain("onedata.org");
+    QCoreApplication::setApplicationName("Oneclient");
+
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
         QMessageBox::critical(0, QObject::tr("Systray"),
                               QObject::tr("I couldn't detect any system tray "

@@ -6,5 +6,10 @@
         <file>warning.png</file>
         <file>error.png</file>
         <file>disconnected.png</file>
+        <file>add.png</file>
+        <file>remove.png</file>
+        <file>mount.png</file>
+        <file>unmount.png</file>
+        <file>edit.png</file>
     </qresource>
 </RCC>

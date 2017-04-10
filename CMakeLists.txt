@@ -24,6 +24,8 @@ add_executable(oneclient_qt
   src/logowidgetaction.cc
   src/activemountwidgetaction.cc
   src/focusdetectingwidget.cc
+  src/providersettings.cc
+  src/providersettingseditor.cc
   qt_resources/resources.qrc)
 
 # Use the Widgets module from Qt 5.

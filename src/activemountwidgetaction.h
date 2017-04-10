@@ -9,21 +9,35 @@
 #include <QString>
 #include <QWidgetAction>
 
+#include "providersettings.h"
+
+enum class ProviderMountState {
+  Broken,
+  Disconnected,
+  Connected
+};
+
 class ActiveMountWidgetAction : public QWidgetAction {
   Q_OBJECT
 public:
-  ActiveMountWidgetAction(const QString &provider, QObject *parent);
+  ActiveMountWidgetAction(const ProviderSettings &settings, QObject *parent);
 
-  // virtual void focusOutEvent(QFocusEvent* event) Q_DECL_OVERRIDE;
+  ProviderSettings providerSettings;
+
+  ProviderMountState mountState;
 
 private:
-  QString providerName;
 
   QPushButton *pUnmountButton;
+  QPushButton *pEditButton;
+  QPushButton *pRemoveButton;
+
   QLabel *pProviderName;
   QLabel *pStatusIcon;
+
 
 public slots:
   void mouseEnter();
   void mouseLeave();
+  void openMount();
 };

@@ -15,16 +15,17 @@
 #include <QSpinBox>
 #include <QTextEdit>
 #include <QVBoxLayout>
+#include <QDesktopServices>
 
 #include <iostream>
 
 #include "focusdetectingwidget.h"
 
-ActiveMountWidgetAction::ActiveMountWidgetAction(const QString &provider,
+ActiveMountWidgetAction::ActiveMountWidgetAction(const ProviderSettings &settings,
                                                  QObject *parent)
     : QWidgetAction(parent) {
 
-  providerName = provider;
+  providerSettings = settings;
 
   auto pWidget =
       new FocusDetectingWidget(nullptr /*qobject_cast<QWidget *>(this)*/);
@@ -35,6 +36,8 @@ ActiveMountWidgetAction::ActiveMountWidgetAction(const QString &provider,
           &ActiveMountWidgetAction::mouseEnter);
   connect(pWidget, &FocusDetectingWidget::mouseLeave, this,
           &ActiveMountWidgetAction::mouseLeave);
+  connect(pWidget, &FocusDetectingWidget::mousePressed, this,
+          &ActiveMountWidgetAction::openMount);
 
   auto pLayout = new QHBoxLayout();
 
@@ -45,18 +48,35 @@ ActiveMountWidgetAction::ActiveMountWidgetAction(const QString &provider,
   pLayout->addWidget(pStatusIcon);
 
   // Setup provider name
-  pProviderName = new QLabel(providerName);
+  pProviderName = new QLabel(providerSettings.name);
   pLayout->addWidget(pProviderName);
 
-  // Setup unmount button
-  pUnmountButton = new QPushButton("Mount");
-  pLayout->addWidget(pUnmountButton);
+  auto createActionButton = [](const QString& iconName) {
+    auto button = new QPushButton();
+    button->setFlat(true);
+    button->setMinimumWidth(30);
+    button->setMaximumWidth(30);
+    button->setMinimumHeight(30);
+    button->setMaximumHeight(30);
+    button->setIcon(QIcon(QPixmap(iconName)));
+    return button;
+  };
 
-  // connect(this, &QAction::hovered, this, &ActiveMountWidgetAction::onHover);
+  pUnmountButton = createActionButton(":mount.png");
+  pLayout->addWidget(pUnmountButton);
+  pEditButton = createActionButton(":edit.png");
+  pLayout->addWidget(pEditButton);
+  pRemoveButton = createActionButton(":remove.png");
+  pLayout->addWidget(pRemoveButton);
 
   // Register widget layout
   pWidget->setLayout(pLayout);
   setDefaultWidget(pWidget);
+}
+
+void ActiveMountWidgetAction::openMount() {
+  std::cout << "Pressed provider mount" << std::endl;
+  QDesktopServices::openUrl(QUrl::fromLocalFile("~/Desktop"));
 }
 
 void ActiveMountWidgetAction::mouseEnter() {

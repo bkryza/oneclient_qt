@@ -28,7 +28,6 @@ public:
 
 public slots:
   void showAbout();
-  void openMount(bool checked);
 
 private:
   void createActions();

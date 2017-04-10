@@ -1,19 +1,21 @@
 #pragma once
 
-
 #include <QAction>
-#include <QObject>
-#include <QString>
-#include <QWidgetAction>
-#include <QPushButton>
+#include <QIcon>
 #include <QLabel>
 #include <QMenu>
-#include <QIcon>
+#include <QObject>
+#include <QPushButton>
+#include <QString>
+#include <QWidgetAction>
+#include <QMouseEvent>
+#include <QEvent>
 
 class LogoWidgetAction : public QWidgetAction {
 public:
   LogoWidgetAction(const QString &title, QObject *parent);
 
+  virtual bool event(QEvent *event) override;
 
 private:
   QMenu *pMenu;
