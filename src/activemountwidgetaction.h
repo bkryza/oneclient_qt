@@ -20,7 +20,7 @@ enum class ProviderMountState {
 class ActiveMountWidgetAction : public QWidgetAction {
   Q_OBJECT
 public:
-  ActiveMountWidgetAction(const ProviderSettings &settings, QObject *parent);
+  ActiveMountWidgetAction(const ProviderSettings &settings, QObject *parent = nullptr);
 
   ProviderSettings providerSettings;
 

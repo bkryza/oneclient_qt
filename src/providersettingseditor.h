@@ -16,6 +16,11 @@ public:
     ProviderSettingsEditor();
     ProviderSettingsEditor(const ProviderSettings& settings);
 
+    ProviderSettings getSettings();
+
+public slots:
+  void verify();
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 

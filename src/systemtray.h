@@ -28,6 +28,7 @@ public:
 
 public slots:
   void showAbout();
+  void updateTrayIconMenu();
 
 private:
   void createActions();

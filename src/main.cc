@@ -78,6 +78,7 @@
 #ifndef QT_NO_SYSTEMTRAYICON
 
 #include <QMessageBox>
+#include <QSettings>
 #include "systemtray.h"
 
 int main(int argc, char *argv[])
@@ -89,6 +90,9 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("Onedata");
     QCoreApplication::setOrganizationDomain("onedata.org");
     QCoreApplication::setApplicationName("Oneclient");
+
+    QSettings settings;
+    settings.sync();
 
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
         QMessageBox::critical(0, QObject::tr("Systray"),

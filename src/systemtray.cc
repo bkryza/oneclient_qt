@@ -16,6 +16,7 @@
 #include <QSpinBox>
 #include <QTextEdit>
 #include <QVBoxLayout>
+#include <QSettings>
 
 #include <iostream>
 
@@ -54,7 +55,21 @@ void SystemTray::createActions() {
   manageProviders->setIcon(QIcon(":add.png"));
   connect(manageProviders, &QAction::triggered, []() {
     ProviderSettingsEditor pse;
-    pse.exec();
+    if(pse.exec()) {
+      ProviderSettings providerSettings = pse.getSettings();
+
+      QSettings settings;
+      settings.beginGroup("StorageProvider::"+providerSettings.name);
+      settings.setValue("name", providerSettings.name);
+      settings.setValue("hostname", providerSettings.hostname);
+      settings.setValue("port", providerSettings.port);
+      settings.setValue("mountPath", providerSettings.mountPath);
+      settings.setValue("accessToken", providerSettings.accessToken);
+
+      settings.endGroup();
+      settings.sync();
+
+    }
   });
 
   aboutAction = new QAction(tr("&About..."), this);
@@ -64,17 +79,30 @@ void SystemTray::createActions() {
   connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
 }
 
-void SystemTray::createTrayIcon() {
-  trayIconMenu = new QMenu(nullptr);
+void SystemTray::updateTrayIconMenu() {
+
+  trayIconMenu->clear();
+
   trayIconMenu->addAction(onedataLogoAction);
 
   trayIconMenu->addSeparator();
 
-  // trayIconMenu->addAction(provider1Action);
-  // trayIconMenu->addAction(provider2Action);
-  // trayIconMenu->addAction(provider3Action);
+  QSettings settings;
+  QStringList groups = settings.childGroups();
+  for(auto group : groups) {
+    if(group.startsWith("StorageProvider::")) {
+      ProviderSettings ps;
+      settings.beginGroup(group);
+      ps.name = settings.value("name").toString();
+      ps.hostname = settings.value("hostname").toString();
+      ps.port = settings.value("port").toInt();
+      ps.mountPath = settings.value("mountPath").toString();
+      ps.accessToken = settings.value("accessToken").toString();
+      settings.endGroup();
+      trayIconMenu->addAction(new ActiveMountWidgetAction(ps));
+    }
+  }
 
-  //trayIconMenu->addSeparator();
 
   trayIconMenu->addAction(manageProviders);
 
@@ -83,9 +111,15 @@ void SystemTray::createTrayIcon() {
   trayIconMenu->addAction(aboutAction);
   trayIconMenu->addAction(quitAction);
 
+}
+void SystemTray::createTrayIcon() {
+  trayIconMenu = new QMenu(nullptr);
+
   trayIcon = new QSystemTrayIcon(nullptr);
   trayIcon->setContextMenu(trayIconMenu);
   trayIcon->setIcon(QIcon(":/onedata-icon.png"));
+
+  connect(trayIcon, &QSystemTrayIcon::activated, this, &SystemTray::updateTrayIconMenu);
 }
 
 void SystemTray::showAbout() {

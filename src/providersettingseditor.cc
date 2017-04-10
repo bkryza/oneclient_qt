@@ -1,9 +1,14 @@
 #include "providersettingseditor.h"
 
+#include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QHBoxLayout>
-#include <QVBoxLayout>
 #include <QIntValidator>
+#include <QVBoxLayout>
+#include <QMessageBox>
+
+constexpr auto minPortRange = 1;
+constexpr auto maxPortRange = 99999;
 
 ProviderSettingsEditor::ProviderSettingsEditor() { createLayout(); }
 
@@ -16,7 +21,6 @@ ProviderSettingsEditor::ProviderSettingsEditor(const ProviderSettings &settings)
 void ProviderSettingsEditor::createLayout() {
 
   QVBoxLayout *mainLayout = new QVBoxLayout;
-  // mainLayout->setAlignment(line, Qt::AlignHCenter);
 
   providerNameLabel = new QLabel(tr("Provider name"));
   hostnameLabel = new QLabel(tr("Provider host name"));
@@ -31,7 +35,7 @@ void ProviderSettingsEditor::createLayout() {
   hostnameEdit->setText(providerSettings.hostname);
 
   portEdit = new QLineEdit();
-  portEdit->setValidator( new QIntValidator(1, 99999, this) );
+  portEdit->setValidator(new QIntValidator(minPortRange, maxPortRange, this));
   portEdit->setText(QString::number(providerSettings.port));
 
   mountPathEdit = new QLineEdit();
@@ -45,7 +49,7 @@ void ProviderSettingsEditor::createLayout() {
     QString path = QFileDialog::getExistingDirectory(
         this, tr("Open Directory"), "~",
         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    if(!path.trimmed().isEmpty()) {
+    if (!path.trimmed().isEmpty()) {
       providerSettings.mountPath = path;
       mountPathEdit->setText(providerSettings.mountPath);
     }
@@ -70,17 +74,48 @@ void ProviderSettingsEditor::createLayout() {
   mainLayout->addWidget(accessTokenLabel);
   mainLayout->addWidget(accessTokenEdit);
 
-  auto modalButtonsLayout = new QHBoxLayout(nullptr);
-  cancelButton = new QPushButton(tr("&Cancel"));
-  saveButton = new QPushButton(tr("&Save"));
-  modalButtonsLayout->addWidget(saveButton);
-  modalButtonsLayout->addWidget(cancelButton);
-  mainLayout->addLayout(modalButtonsLayout);
+  auto modalButtonsBox =
+      new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+
+  mainLayout->addWidget(modalButtonsBox);
+
+  connect(modalButtonsBox, SIGNAL(accepted()), this, SLOT(verify()));
+  connect(modalButtonsBox, SIGNAL(rejected()), this, SLOT(reject()));
 
   setLayout(mainLayout);
 
   setWindowTitle(tr("Provider settings..."));
   resize(400, 300);
+}
+
+void ProviderSettingsEditor::verify() {
+  if (!providerNameEdit->text().isEmpty() &&
+      !hostnameEdit->text().isEmpty() && !portEdit->text().isEmpty() &&
+      !mountPathEdit->text().isEmpty() && !accessTokenEdit->text().isEmpty()) {
+
+        providerSettings.name = providerNameEdit->text();
+        providerSettings.hostname = hostnameEdit->text();
+        providerSettings.port = portEdit->text().toInt();
+        providerSettings.mountPath = mountPathEdit->text();
+        providerSettings.accessToken = accessTokenEdit->text();
+
+    accept();
+    return;
+  }
+
+  QMessageBox::StandardButton answer;
+  answer = QMessageBox::warning(
+      this, tr("Incomplete Form"),
+      tr("The form does not contain all the necessary information.\n"
+         "Do you want to discard it?"),
+      QMessageBox::Yes | QMessageBox::No);
+
+  if (answer == QMessageBox::Yes)
+    reject();
+}
+
+ProviderSettings ProviderSettingsEditor::getSettings() {
+  return providerSettings;
 }
 
 void ProviderSettingsEditor::closeEvent(QCloseEvent *event) {}
