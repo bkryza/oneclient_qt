@@ -10,6 +10,7 @@
 #include <QWidgetAction>
 #include <QMouseEvent>
 #include <QEvent>
+#include <QPushButton>
 
 class LogoWidgetAction : public QWidgetAction {
 public:

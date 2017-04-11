@@ -33,6 +33,7 @@ private:
   QPushButton *pRemoveButton;
 
   QLabel *pProviderName;
+  QLabel *pProviderHostname;
   QLabel *pStatusIcon;
 
 
@@ -40,4 +41,10 @@ public slots:
   void mouseEnter();
   void mouseLeave();
   void openMount();
+
+signals:
+  void removeProvider(QString providerName);
+  void mountUnmountProvider(QString providerName);
+  void editProvider(QString providerName);
+
 };
