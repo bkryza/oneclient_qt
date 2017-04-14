@@ -18,21 +18,27 @@
 
 #include <iostream>
 
+constexpr auto logoWidth = 120;
+constexpr auto logoHeight = 40;
+
 LogoWidgetAction::LogoWidgetAction(const QString &title, QObject *parent)
     : QWidgetAction(parent) {
 
   QWidget *pWidget = new QWidget(nullptr);
-  QHBoxLayout *pLayout = new QHBoxLayout();
   pWidget->setAttribute(Qt::WA_Hover, true);
 
-  pLabel = new QLabel(title);
-  pMenu = new QMenu();
-  pMenu->addMenu("");
-  pLogo = new QLabel();
-  // pLogo->setIcon(QIcon(QPixmap(iconName)))
-  pLogo->setPixmap(
-      QPixmap(":/onedata-logo.png").scaled(QSize(80, 80), Qt::KeepAspectRatio));
-  pLogo->setScaledContents(false);
+  QHBoxLayout *pLayout = new QHBoxLayout();
+  pLayout->setAlignment(Qt::AlignLeft);
+
+  pLogo = new QLabel(pWidget);
+  pLogo->setEnabled(true);
+  pLogo->setStyleSheet("padding: 0px;");
+  pLogo->setMinimumWidth(logoWidth);
+  pLogo->setMaximumWidth(logoWidth);
+  pLogo->setPixmap(QPixmap(":/onedata-logo.png")
+                       .scaled(QSize(logoWidth, logoHeight),
+                               Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
   pLayout->addWidget(pLogo);
   pWidget->setLayout(pLayout);
   setDefaultWidget(pWidget);

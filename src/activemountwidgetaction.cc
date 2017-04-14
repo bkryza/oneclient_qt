@@ -40,16 +40,31 @@ ActiveMountWidgetAction::ActiveMountWidgetAction(const ProviderSettings &setting
           &ActiveMountWidgetAction::openMount);
 
   auto pLayout = new QHBoxLayout();
+  pLayout->setAlignment(Qt::AlignLeft);
 
   // Setup mount point status icon
-  QPixmap pix{":/disconnected.png"};
   pStatusIcon = new QLabel();
-  pStatusIcon->setPixmap(pix.scaled(QSize(15, 15), Qt::KeepAspectRatio));
+  // QPixmap disabled_icon( "disabled.png" );
+  // QIcon icon( enabled_icon );
+  // icon.addPixmap( disabled_icon, QIcon::Disabled );
+  // QAction action( icon, "&Menu action..." );
+
+  QPixmap pix{":/disconnected.png"};
+  pStatusIcon->setPixmap(pix.scaled(QSize(20, 20), Qt::KeepAspectRatio, Qt::SmoothTransformation));
   pLayout->addWidget(pStatusIcon);
 
-  // Setup provider name
+  // Setup provider name and host name
+  QVBoxLayout* providerIdentificationLayout = new QVBoxLayout();
+  providerIdentificationLayout->setSpacing(0);
   pProviderName = new QLabel(providerSettings.name);
-  pLayout->addWidget(pProviderName);
+  pProviderName->setMaximumWidth(200);
+  pProviderName->setMinimumWidth(200);
+  pProviderName->setFont(QFont("Lucida Grande", 14, QFont::Bold));
+  providerIdentificationLayout->addWidget(pProviderName);
+  pProviderHostname = new QLabel(providerSettings.hostname);
+  pProviderHostname->setFont(QFont("Lucida Grande", 11, QFont::Normal));
+  providerIdentificationLayout->addWidget(pProviderHostname);
+  pLayout->addLayout(providerIdentificationLayout);
 
   auto createActionButton = [](const QString& iconName) {
     auto button = new QPushButton();
@@ -62,12 +77,30 @@ ActiveMountWidgetAction::ActiveMountWidgetAction(const ProviderSettings &setting
     return button;
   };
 
+  QHBoxLayout *mountActionsLayout = new QHBoxLayout();
+  mountActionsLayout->setSpacing(0);
+
   pUnmountButton = createActionButton(":mount.png");
-  pLayout->addWidget(pUnmountButton);
+  pUnmountButton->setStyleSheet("border: 1px; margin: 0px; padding: 0px;");
+  connect(pUnmountButton, &QPushButton::pressed, [&]() {
+    emit mountUnmountProvider(providerSettings.name);
+  });
+  mountActionsLayout->addWidget(pUnmountButton);
+
   pEditButton = createActionButton(":edit.png");
-  pLayout->addWidget(pEditButton);
+  pEditButton->setStyleSheet("border: none; margin: 0px; padding: 0px;");
+  connect(pEditButton, &QPushButton::pressed, [&]() {
+    emit editProvider(providerSettings.name);
+  });
+  mountActionsLayout->addWidget(pEditButton);
+
   pRemoveButton = createActionButton(":remove.png");
-  pLayout->addWidget(pRemoveButton);
+  pRemoveButton->setStyleSheet("border: none; margin: 0px; padding: 0px;");
+  mountActionsLayout->addWidget(pRemoveButton);
+  connect(pRemoveButton, &QPushButton::pressed, [&]() {
+    emit removeProvider(providerSettings.name);
+  });
+  pLayout->addLayout(mountActionsLayout);
 
   // Register widget layout
   pWidget->setLayout(pLayout);

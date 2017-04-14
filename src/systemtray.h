@@ -30,6 +30,10 @@ public slots:
   void showAbout();
   void updateTrayIconMenu();
 
+  void removeProvider(QString providerName);
+  void mountUnmountProvider(QString providerName);
+  void editProvider(QString providerName);
+
 private:
   void createActions();
   void createTrayIcon();
@@ -45,6 +49,7 @@ private:
   QAction *manageProviders;
 
   QAction *aboutAction;
+  QAction *logsAction;
   QAction *quitAction;
 
   QSystemTrayIcon *trayIcon;
