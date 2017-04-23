@@ -40,6 +40,7 @@ ActiveMountWidgetAction::ActiveMountWidgetAction(const ProviderSettings &setting
           &ActiveMountWidgetAction::openMount);
 
   auto pLayout = new QHBoxLayout();
+  pLayout->setAlignment(Qt::AlignLeft);
 
   pLayout->setAlignment(Qt::AlignLeft);
 

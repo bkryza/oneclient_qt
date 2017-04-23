@@ -42,6 +42,7 @@ public slots:
 
   void showNotification(int code, QString message);
 
+
   void removeProvider(QString providerName);
   void mountUnmountProvider(QString providerName);
   void editProvider(QString providerName);
