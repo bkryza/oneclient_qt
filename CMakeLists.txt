@@ -84,14 +84,10 @@ add_executable(oneclient_qt
   src/providersettings.cc
   src/providersettingseditor.cc
   src/settingsmanager.cc
-<<<<<<< HEAD
   src/oneclientmessagelistener.cc
   src/hash.cc
   qt_resources/resources.qrc
   ${oneclient_ICON})
-=======
-  qt_resources/resources.qrc)
->>>>>>> origin/master
 
 # Use the Widgets module from Qt 5.
 if(APPLE)
