@@ -1,5 +1,13 @@
 #include "systemtray.h"
 
+#include "activemountwidgetaction.h"
+#include "guimessage.h"
+#include "hash.h"
+#include "logowidgetaction.h"
+#include "providersettings.h"
+#include "providersettingseditor.h"
+#include "settingsmanager.h"
+
 #include <QAction>
 #include <QApplication>
 #include <QCheckBox>
@@ -12,19 +20,20 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QMessageBox>
+#include <QProcess>
 #include <QPushButton>
 #include <QSettings>
+#include <QSharedPointer>
 #include <QSpinBox>
+#include <QStorageInfo>
 #include <QTextEdit>
 #include <QVBoxLayout>
+#include <boost/archive/text_iarchive.hpp>
+
+#include <boost/interprocess/ipc/message_queue.hpp>
 
 #include <iostream>
-
-#include "activemountwidgetaction.h"
-#include "logowidgetaction.h"
-#include "providersettings.h"
-#include "providersettingseditor.h"
-#include "settingsmanager.h"
+#include <memory>
 
 SystemTray::SystemTray(QObject *parent) : QObject(parent) {
   createActions();
@@ -107,6 +116,9 @@ void SystemTray::createTrayIcon() {
 
 void SystemTray::showAbout() {
 
+  trayIcon->showMessage("ASDASDASD", "asdadsasdasdasdasdas  asd");
+  return;
+
   auto pWindow = new QWidget(nullptr /*qobject_cast<QWidget>(trayIcon)*/);
   pWindow->resize(640, 400);
   pWindow->setStyleSheet("background-color: #BBBBBB");
@@ -137,7 +149,6 @@ void SystemTray::showAbout() {
   pWindow->show();
   pWindow->setWindowTitle(
       QApplication::translate("oneclient", "About Oneclient..."));
-
 }
 
 void SystemTray::removeProvider(QString providerName) {
@@ -149,12 +160,68 @@ void SystemTray::removeProvider(QString providerName) {
     hide();
     show();
   }
-
 }
 
 void SystemTray::mountUnmountProvider(QString providerName) {
   std::cout << "SystemTray::mountUnmountProvider: "
             << providerName.toStdString() << std::endl;
+
+  auto ps = SettingsManager::getProviderSettings(providerName);
+  QProcess process;
+
+  foreach (const QStorageInfo &storage, QStorageInfo::mountedVolumes()) {
+    if (storage.isValid() && storage.isReady()) {
+      if (storage.rootPath() == ps->mountPath) {
+        // Oneclient already mounted at this path
+        // unmount
+        process.startDetached("/usr/local/bin/oneclient",
+                              QStringList() << "-u" << ps->mountPath);
+        std::cout << "Oneclient successfully unmounted from "
+                  << ps->mountPath.toStdString() << std::endl;
+        boost::interprocess::message_queue::remove(
+            Hash::hash(ps->mountPath.toStdString()).c_str());
+        return;
+      }
+    }
+  }
+
+  std::cout << "Mounting oneclient at " << ps->mountPath.toStdString()
+            << "using:\n"
+            << ps->buildOneclientCommandLine().join(" ").toStdString()
+            << std::endl;
+
+  if (!ps.isNull()) {
+    // Create interprocess communication queue for the new oneclient
+    // process and pass it to the command line
+    std::cout << "Creating interprocess message queue: "
+              << Hash::hash(ps->mountPath.toStdString()) << std::endl;
+
+    boost::interprocess::message_queue::remove(
+        Hash::hash(ps->mountPath.toStdString()).c_str());
+    boost::interprocess::message_queue(
+        boost::interprocess::create_only,
+        Hash::hash(ps->mountPath.toStdString()).c_str(), 20, 1024);
+    auto cql = QSharedPointer<OneclientMessageListener>(
+        new OneclientMessageListener(ps->mountPath));
+
+    connect(cql.data(), &OneclientMessageListener::receivedNotification, this,
+            &SystemTray::showNotification);
+    connect(this, &SystemTray::showMessage, trayIcon,
+            &QSystemTrayIcon::showMessage);
+
+    clientMessageQueueListeners.insert(ps->mountPath, cql);
+    cql->start();
+
+    process.startDetached("/usr/local/bin/oneclient",
+                          ps->buildOneclientCommandLine());
+  }
+}
+
+void SystemTray::showNotification(int code, QString message) {
+  std::cout << "Received oneclient notification: " << message.toStdString()
+            << std::endl;
+  // trayIcon->showMessage("Oneclient event", message);
+  emit showMessage("Oneclient", message, QSystemTrayIcon::Information, 10000);
 }
 
 void SystemTray::editProvider(QString providerName) {
@@ -168,5 +235,4 @@ void SystemTray::editProvider(QString providerName) {
     ProviderSettings providerSettings = pse.getSettings();
     SettingsManager::updateProvider(providerSettings);
   }
-
 }

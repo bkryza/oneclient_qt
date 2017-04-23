@@ -1,6 +1,8 @@
 #ifndef SYSTEMTRAY_H
 #define SYSTEMTRAY_H
 
+#include "oneclientmessagelistener.h"
+
 #include <QAction>
 #include <QCheckBox>
 #include <QCloseEvent>
@@ -13,10 +15,12 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QSpinBox>
+#include <QSystemTrayIcon>
 #include <QTextEdit>
 #include <QVBoxLayout>
 
-#include <QSystemTrayIcon>
+#include <map>
+#include <thread>
 
 class SystemTray : public QObject {
   Q_OBJECT
@@ -26,9 +30,17 @@ public:
   void show();
   void hide();
 
+signals:
+  void showMessage(
+      const QString &title, const QString &message,
+      QSystemTrayIcon::MessageIcon icon,
+      int millisecondsTimeoutHint);
+
 public slots:
   void showAbout();
   void updateTrayIconMenu();
+
+  void showNotification(int code, QString message);
 
   void removeProvider(QString providerName);
   void mountUnmountProvider(QString providerName);
@@ -54,6 +66,11 @@ private:
 
   QSystemTrayIcon *trayIcon;
   QMenu *trayIconMenu;
+
+  QMap<QString, QSharedPointer<OneclientMessageListener>>
+      clientMessageQueueListeners;
+  // QMap<QString, std::shared_ptr<boost::interprocess::message_queue>>
+  // messageQueues;
 };
 
 #endif /* SYSTEMTRAY_H */

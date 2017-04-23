@@ -15,6 +15,8 @@ public:
   QString mountPath;
   QString accessToken;
 
+  QStringList buildOneclientCommandLine() const;
+
 };
 
 #endif /*PROVIDERSETTINGS_H*/

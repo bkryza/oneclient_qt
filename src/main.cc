@@ -1,10 +1,12 @@
 #include <QApplication>
 
-// #ifndef QT_NO_SYSTEMTRAYICON
-#include <QMessageBox>
-#include <QSettings>
 #include "systemtray.h"
 #include "settingsmanager.h"
+
+#include <QMessageBox>
+#include <QSettings>
+#include <QSystemTrayIcon>
+#include <iostream>
 
 int main(int argc, char *argv[])
 {
@@ -24,33 +26,15 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    //
+    // Setup an interpocess communication queue path
+    //
+    std::cout << "SUPPORTS MESSAGES: " << QSystemTrayIcon::supportsMessages() << std::endl;
+
     QApplication::setQuitOnLastWindowClosed(false);
 
     SystemTray systemtray;
     systemtray.show();
+
     return app.exec();
 }
-//
-// #else
-//
-// #include <QLabel>
-// #include <QDebug>
-//
-// int main(int argc, char *argv[])
-// {
-//     QApplication app{argc, argv};
-//     constexpr QString text{"QSystemTrayIcon is not supported on this platform"};
-//     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-//
-//     auto label = new QLabel(text);
-//     label->setWordWrap(true);
-//
-//     label->show();
-//     qDebug() << text;
-//
-//     SystemTray systemtray;
-//     systemtray.show();
-//     return app.exec();
-// }
-//
-// #endif
